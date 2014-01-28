@@ -14,8 +14,8 @@ OrderScraper.prototype.start = function() {
   var self = this;
   setInterval(function () {
       self.scrape(function(orders) {
-      cleaned = self.cleanOrders(orders);
-      self.emit("update", cleaned);
+        cleaned = self.cleanOrders(orders);
+        self.emit("update", cleaned);
     })
   }, this.period);
 }

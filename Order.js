@@ -3,7 +3,7 @@ function SellOrder(txid, address, size, bitcoins) {
   this.address = address;
   this.size = parseFloat(size);
   this.bitcoin = parseFloat(bitcoins);
-  this.price = size / bitcoins;
+  this.price = bitcoins / size;
 }
 
 module.exports = SellOrder;

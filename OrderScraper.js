@@ -12,10 +12,12 @@ OrderScraper.prototype = Object.create(EventEmitter.prototype);
 
 OrderScraper.prototype.start = function() {
   var self = this;
-  setInterval(this.scrape(function(orders) {
-    cleaned = self.cleanOrders(orders);
-    self.emit("update", cleaned);
-  }), this.period);
+  setInterval(function () {
+      self.scrape(function(orders) {
+      cleaned = self.cleanOrders(orders);
+      self.emit("update", cleaned);
+    })
+  }, this.period);
 }
 
 OrderScraper.prototype._scrape = function (curr_page, total_orders, cb) {

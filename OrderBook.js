@@ -67,9 +67,8 @@ module.exports = OrderBook;
 
 var os = new OrderScraper(10000, 10);
 os.start();
-os.on("update", function (b) { console.log(b.length) });
-// var ob = new OrderBook(os);
-// ob.on("update", function(json) {
-//   console.log(json);
-// });
+var ob = new OrderBook(os);
+ob.on("update", function(json) {
+  console.log(json);
+});
 

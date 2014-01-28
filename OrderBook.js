@@ -63,12 +63,3 @@ OrderBook.prototype.aggregateBook = function(orders) {
 }
 
 module.exports = OrderBook;
-
-
-var os = new OrderScraper(10000, 10);
-os.start();
-var ob = new OrderBook(os);
-ob.on("update", function(json) {
-  console.log(json);
-});
-

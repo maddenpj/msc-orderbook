@@ -15,7 +15,6 @@ var OrderBook = require('./OrderBook.js')
 app.use(logger());
 app.use(compress());
 app.use(serve('./public'));
-// app.use(require('app-trie-router')(app))
 app.use(views('./templates', 'jade'));
 
 
@@ -28,10 +27,19 @@ server.listen(3001);
 app.listen(3000);
 
 
+var scraper = new OrderScraper(60000, 10);
+scraper.start();
+
+var lastBook = []
+var book = new OrderBook(scraper);
+book.on("update", function(book) {
+  console.log("got new book");
+  io.sockets.emit("book-update", book);
+  lastBook = book;
+});
+
+
 io.sockets.on('connection', function(socket) {
   console.log('connected');
-
-  socket.on("news", function() {
-    console.log("ASD");
-  });
+  socket.emit("book-update", lastBook);
 });

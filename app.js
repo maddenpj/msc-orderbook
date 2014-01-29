@@ -9,6 +9,7 @@ var server = require('http').Server(app.callback());
 var io = require('socket.io').listen(server);
 
 var OrderScraper = require('./OrderScraper.js')
+var TestOrderSource = require('./TestOrderSource.js')
 var OrderBook = require('./OrderBook.js')
 
 
@@ -27,7 +28,7 @@ server.listen(3001);
 app.listen(3000);
 
 
-var scraper = new OrderScraper(60000, 10);
+var scraper = new TestOrderSource(60000);
 scraper.start();
 
 var lastBook = []

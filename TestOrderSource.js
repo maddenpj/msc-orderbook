@@ -1,5 +1,6 @@
 var SellOrder = require('./Order.js');
 var EventEmitter = require('events').EventEmitter;
+var fs = require('fs');
 
 function TestOrderSource(period, file) {
   this.period = period;
@@ -8,8 +9,9 @@ function TestOrderSource(period, file) {
 TestOrderSource.prototype = Object.create(EventEmitter.prototype);
 
 TestOrderSource.prototype.start = function() {
-  var book = this.cleanOrders(JSON.parse(require('fs').readFileSync(this.file)))
+  var book = this.cleanOrders(JSON.parse(fs.readFileSync(this.file)))
   var self = this;
+  self.emit("update", book)
   setInterval(function() {
     self.emit("update", book)
   }, this.period);
@@ -27,7 +29,3 @@ TestOrderSource.prototype.cleanOrders = function(orders) {
 }
 
 module.exports = TestOrderSource;
-
-var ts = new TestOrderSource(10000);
-ts.start();
-ts.on("update", function(orders) { console.log(orders) } );

@@ -1,44 +1,63 @@
 var EventEmitter = require('events').EventEmitter;
-var OrderScraper = require('./OrderScraper.js');
+var MXOrderScraper = require('./MXOrderScraper.js');
 
-function BookEntry(price, size, bitcoin) {
+function BookEntry(price, size) {
   this.price = price;
   this.size = size;
-  this.bitcoin = bitcoin;
   this.bookSum = 0;
 }
 
 BookEntry.prototype.update = function(other) {
   this.size += other.size;
-  this.bitcoin += other.bitcoin;
 }
 
-function OrderBook(source) {
-  this.eps = 0.0001;
-
-  var self = this;
-  source.on("update", function(orders) {
-    var book = self.aggregateBook(orders);
-    self.emit("update", book);
-  });
-}
-OrderBook.prototype = Object.create(EventEmitter.prototype);
-
-
-function compareOrders(a,b) {
+function compareOrdersAsc(a,b) {
   if(a.price < b.price) return -1;
   if(a.price > b.price) return 1;
   return 0;
 }
 
+function aggregateBuys(book) {
+  var len = book.length;
+  book[len-1].bookSum = book[len-1].size
+  for(var i = len - 2; i >= 0; i--) {
+    book[i].bookSum = book[i+1].bookSum + book[i].size;
+  }
+  return book;
+}
+
+function aggregateSells(book) {
+  book[0].bookSum = book[0].size;
+  for(var i = 1; i < book.length; i++) {
+    book[i].bookSum = book[i-1].bookSum + book[i].size;
+  }
+  return book;
+}
+
+function OrderBook(source) {
+  this.eps = 0.001;
+
+  var self = this;
+  source.on("buys", function(orders) {
+    var buyBook = aggregateBuys(self.aggregateBook(orders));
+    self.emit("buys", buyBook);
+  });
+  source.on("sells", function(orders) {
+    var sellBook = aggregateSells(self.aggregateBook(orders));
+    self.emit("sells", sellBook);
+  });
+}
+OrderBook.prototype = Object.create(EventEmitter.prototype);
+
+
 OrderBook.prototype.aggregateBook = function(orders) {
-  orders.sort(compareOrders);
+  orders.sort(compareOrdersAsc);
   var book = [];
   if(orders.length == 0) return book;
 
   var i = 0;
   var order = orders[i];
-  var be = new BookEntry(order.price, order.size, order.bitcoin);
+  var be = new BookEntry(order.price, order.size);
   while(true) {
     if((i+1) >= orders.length) {
       book.push(be);
@@ -51,15 +70,12 @@ OrderBook.prototype.aggregateBook = function(orders) {
       } else {
         book.push(be);
         order = next;
-        be = new BookEntry(order.price, order.size, order.bitcoin);
+        be = new BookEntry(order.price, order.size);
       }
     }
   }
-  book[0].bookSum = orders[0].bitcoin;
-  for(var i = 1; i < book.length; i++) {
-    book[i].bookSum = book[i-1].bookSum + book[i].bitcoin;
-  }
   return book;
 }
+
 
 module.exports = OrderBook;

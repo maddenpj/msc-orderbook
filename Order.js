@@ -1,9 +1,11 @@
-function SellOrder(txid, address, size, bitcoins) {
-  this.txid = txid;
-  this.address = address;
-  this.size = parseFloat(size);
-  this.bitcoin = parseFloat(bitcoins);
-  this.price = bitcoins / size;
+function SellOrder(size,  price) {
+  this.size = size;
+  this.price = price;
 }
 
-module.exports = SellOrder;
+function BuyOrder(size,  price) {
+  this.size = size;
+  this.price = price;
+}
+
+module.exports = { SellOrder: SellOrder, BuyOrder: BuyOrder }

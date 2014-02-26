@@ -34,8 +34,8 @@ function aggregateSells(book) {
   return book;
 }
 
-function OrderBook(source) {
-  this.eps = 0.001;
+function OrderBook(source, eps)  {
+  this.eps = eps || 0.001;
 
   var self = this;
   source.on("buys", function(orders) {

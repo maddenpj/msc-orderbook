@@ -12,13 +12,15 @@ MXOrderScraper.prototype = Object.create(EventEmitter.prototype);
 
 MXOrderScraper.prototype.start = function() {
   var self = this;
-  setInterval(function () {
+  var emitter = function () {
       self.scrape(function(orders) {
         cleaned = self.cleanOrders(orders);
         self.emit("buys", cleaned.buys);
         self.emit("sells", cleaned.sells);
     })
-  }, this.period);
+  }
+  emitter();
+  setInterval(emitter, this.period);
 }
 
 MXOrderScraper.prototype.scrape = function (cb) {

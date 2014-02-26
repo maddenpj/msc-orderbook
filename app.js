@@ -8,8 +8,7 @@ var app = koa();
 var server = require('http').Server(app.callback());
 var io = require('socket.io').listen(server);
 
-var OrderScraper = require('./OrderScraper.js')
-var TestOrderSource = require('./TestOrderSource.js')
+var MXOrderScraper = require('./MXOrderScraper.js')
 var OrderBook = require('./OrderBook.js')
 
 
@@ -27,20 +26,28 @@ app.use(router.get('/', function *(next) {
 server.listen(3001);
 app.listen(3000);
 
-
-var scraper = new TestOrderSource(60000);
+var eps = 0.001;
+var scraper = new MXOrderScraper(15*60000);
 scraper.start();
 
-var lastBook = []
-var book = new OrderBook(scraper);
-book.on("update", function(book) {
-  console.log("got new book");
-  io.sockets.emit("book-update", book);
-  lastBook = book;
+var book = new OrderBook(scraper, eps);
+
+var lastBuys = []
+book.on("buys", function(book) {
+  console.log("got buys");
+  io.sockets.emit("book-update-buys", book);
+  lastBuys = book;
+});
+var lastSells = []
+book.on("sells", function(book) {
+  console.log("got sells");
+  io.sockets.emit("book-update-sells", book);
+  lastSells = book;
 });
 
 
 io.sockets.on('connection', function(socket) {
   console.log('connected');
-  socket.emit("book-update", lastBook);
+  socket.emit("book-update-buys", lastBuys);
+  socket.emit("book-update-sells", lastSells);
 });
